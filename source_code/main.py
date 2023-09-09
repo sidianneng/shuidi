@@ -37,17 +37,17 @@ class PID:
         self.preoffset = preoffset
 
 # PID parameter for X axis
-pid_x = PID(75, 0, 0, 0, 0, 0)
+pid_x = PID(-5, 0, -30, 0, 0, 0)
 
 # PID parameter for Y axis
-pid_y = PID(75, 0, 0, 0, 0, 0)
+pid_y = PID(-9, 0, -21, 0, 0, 0)
 
 hall_sen_xbase = 0
 hall_sen_ybase = 0
 hall_sen_zbase = 0
 
 MAX_INTE = 1000
-MAX_OUTPUT = 60000
+MAX_OUTPUT = 65000
 def PID_calculate(cur_offset, pid):
     pid.inte += cur_offset
 
@@ -57,7 +57,6 @@ def PID_calculate(cur_offset, pid):
         pid.inte = -MAX_INTE
 
     output = pid.p * cur_offset + pid.i * pid.inte + pid.d * (cur_offset - pid.preoffset)
-
     if output > MAX_OUTPUT:
         output = MAX_OUTPUT
     elif output < -MAX_OUTPUT:
@@ -80,15 +79,23 @@ print("xbase:%s ybase:%s zbase:%s" % (hall_sen_xbase, hall_sen_ybase, hall_sen_z
 while True:
     led.toggle()
     test_pin.toggle()
-    offset_x = adc0.read_u16() - hall_sen_xbase - 800
-    offset_y = adc1.read_u16() - hall_sen_ybase# - 200
+    offset_x = 0
+    offset_y = 0
+    offset_x += adc0.read_u16()
+    offset_x += adc0.read_u16()
+    offset_x += adc0.read_u16()
+    
+    offset_y += adc1.read_u16()
+    offset_y += adc1.read_u16()
+    offset_y += adc1.read_u16()
+    
+    offset_x = offset_x//3 - hall_sen_xbase
+    offset_y = offset_y//3 - hall_sen_ybase
     #print("off_x:%6s off_y:%6s" % (offset_x, offset_y))
-    #print("%s,%s" % (add_x, offset_x))
     output_x = PID_calculate(offset_x, pid_x)
     output_y = PID_calculate(offset_y, pid_y)
     #output_x = 0
     #output_y = 0
-    #print("out_x:%6s out_y:%6s" % (output_x, output_y))
     if output_y > 0:
         pwm0.duty_u16(output_y)
         pwm1.duty_u16(0)
