@@ -37,10 +37,10 @@ class PID:
         self.preoffset = preoffset
 
 # PID parameter for X axis
-pid_x = PID(-5, 0, -30, 0, 0, 0)
+pid_x = PID(-10, 0, -55, 0, 0, 0)#-11, 0, -80
 
 # PID parameter for Y axis
-pid_y = PID(-9, 0, -21, 0, 0, 0)
+pid_y = PID(-10, 0, -50, 0, 0, 0)#-16, 0, -80
 
 hall_sen_xbase = 0
 hall_sen_ybase = 0
@@ -84,11 +84,11 @@ while True:
     offset_x += adc0.read_u16()
     offset_x += adc0.read_u16()
     offset_x += adc0.read_u16()
-    
+
     offset_y += adc1.read_u16()
     offset_y += adc1.read_u16()
     offset_y += adc1.read_u16()
-    
+
     offset_x = offset_x//3 - hall_sen_xbase
     offset_y = offset_y//3 - hall_sen_ybase
     #print("off_x:%6s off_y:%6s" % (offset_x, offset_y))
