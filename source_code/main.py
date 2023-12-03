@@ -37,17 +37,17 @@ class PID:
         self.preoffset = preoffset
 
 # PID parameter for X axis
-pid_x = PID(-10, 0, -55, 0, 0, 0)#-11, 0, -80
+pid_x = PID(-30, 0, -70, 0, 0, 0)#-20, 0, -24
 
 # PID parameter for Y axis
-pid_y = PID(-10, 0, -50, 0, 0, 0)#-16, 0, -80
+pid_y = PID(-30, 0, -70, 0, 0, 0)#-20, 0, -24
 
 hall_sen_xbase = 0
 hall_sen_ybase = 0
 hall_sen_zbase = 0
 
 MAX_INTE = 1000
-MAX_OUTPUT = 65000
+MAX_OUTPUT = 65535
 def PID_calculate(cur_offset, pid):
     pid.inte += cur_offset
 
@@ -66,14 +66,6 @@ def PID_calculate(cur_offset, pid):
 
     return output
 
-for count in range(50):
-    hall_sen_xbase += adc0.read_u16()
-    hall_sen_ybase += adc1.read_u16()
-    hall_sen_zbase += adc2.read_u16()
-    sleep(0.01)
-hall_sen_xbase = hall_sen_xbase//50
-hall_sen_ybase = hall_sen_ybase//50
-hall_sen_zbase = hall_sen_zbase//50
 print("xbase:%s ybase:%s zbase:%s" % (hall_sen_xbase, hall_sen_ybase, hall_sen_zbase))
 
 while True:
@@ -82,15 +74,11 @@ while True:
     offset_x = 0
     offset_y = 0
     offset_x += adc0.read_u16()
-    offset_x += adc0.read_u16()
-    offset_x += adc0.read_u16()
 
     offset_y += adc1.read_u16()
-    offset_y += adc1.read_u16()
-    offset_y += adc1.read_u16()
 
-    offset_x = offset_x//3 - hall_sen_xbase
-    offset_y = offset_y//3 - hall_sen_ybase
+    offset_x = offset_x - 32768
+    offset_y = offset_y - 32768
     #print("off_x:%6s off_y:%6s" % (offset_x, offset_y))
     output_x = PID_calculate(offset_x, pid_x)
     output_y = PID_calculate(offset_y, pid_y)
@@ -109,7 +97,8 @@ while True:
     else:
         pwm2.duty_u16(0)
         pwm3.duty_u16(-output_x)
-    #sleep(0.001)
+    sleep(0.002)
     #sleep(0.1)
+
 
 
