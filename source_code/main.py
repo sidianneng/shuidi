@@ -5,9 +5,6 @@ from time import sleep
 led = Pin("LED", Pin.OUT)
 led.value(0)
 
-test_pin = Pin(4, Pin.OUT)
-test_pin.value(0)
-
 pwm0 = PWM(Pin(0))
 pwm1 = PWM(Pin(1))
 pwm2 = PWM(Pin(2))
@@ -37,16 +34,12 @@ class PID:
         self.preoffset = preoffset
 
 # PID parameter for X axis
-pid_x = PID(-30, 0, -70, 0, 0, 0)#-20, 0, -24
+pid_x = PID(-30, 0, -70, 0, 0, 0)
 
 # PID parameter for Y axis
-pid_y = PID(-30, 0, -70, 0, 0, 0)#-20, 0, -24
+pid_y = PID(-30, 0, -70, 0, 0, 0)
 
-hall_sen_xbase = 0
-hall_sen_ybase = 0
-hall_sen_zbase = 0
-
-MAX_INTE = 1000
+MAX_INTE = 10000
 MAX_OUTPUT = 65535
 def PID_calculate(cur_offset, pid):
     pid.inte += cur_offset
@@ -66,24 +59,23 @@ def PID_calculate(cur_offset, pid):
 
     return output
 
-print("xbase:%s ybase:%s zbase:%s" % (hall_sen_xbase, hall_sen_ybase, hall_sen_zbase))
-
 while True:
     led.toggle()
-    test_pin.toggle()
     offset_x = 0
     offset_y = 0
-    offset_x += adc0.read_u16()
-
-    offset_y += adc1.read_u16()
+    offset_z = 0
+    offset_x = adc0.read_u16()
+    offset_y = adc1.read_u16()
+    offset_z = adc2.read_u16()
 
     offset_x = offset_x - 32768
     offset_y = offset_y - 32768
-    #print("off_x:%6s off_y:%6s" % (offset_x, offset_y))
+    #print("off_x:%6s off_y:%6s off_z:%6s" % (offset_x, offset_y, offset_z))
     output_x = PID_calculate(offset_x, pid_x)
     output_y = PID_calculate(offset_y, pid_y)
-    #output_x = 0
-    #output_y = 0
+    if offset_z > 30000:
+        output_x = 0
+        output_y = 0
     if output_y > 0:
         pwm0.duty_u16(output_y)
         pwm1.duty_u16(0)
@@ -98,7 +90,6 @@ while True:
         pwm2.duty_u16(0)
         pwm3.duty_u16(-output_x)
     sleep(0.002)
-    #sleep(0.1)
 
 
 
